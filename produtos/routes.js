@@ -1,60 +1,33 @@
 const router = require('express').Router();
-const Sequelize = require('sequelize');
-const db = require('../db');
+const ProdutosModel = require('./model');
 
-const ProdutoSchema = db.define('produtos', {
-  id: {
-    type: Sequelize.INTEGER,
-    autoIncrement: true,
-    allowNull: false,
-    primaryKey: true,
-  },
-  nome: {
-    type: Sequelize.STRING(100),
-    allowNull: false,
-  },
-  preço: {
-    type: Sequelize.STRING(100),
-    allowNull: false,
-  },
-});
-
-const validateProduto = (req, res, next) => {
-  let requiredFields = ['nome', 'preço'];
+router.post('/', async (req, res) => {
   let { body } = req;
-  for (let field of requiredFields) {
-    if (!body[field]) {
-      res.status(400).send(`O campo ${field} é obrigatório`)
-      return;
-    }
-  }
-  next();
-};
+  await ProdutosModel.create(body);
+  res.status(201).send();
+});
 
 router.get('/', async (req, res) => {
-  const usuarios = await ProdutoSchema.findAll();
-  res.status(200).json(usuarios);
-});
-
-router.post('/', validateProduto, async (req, res) => {
-  await ProdutoSchema.create(req.body);
-  res.status(201).send();
+  const produtos = await ProdutosModel.findAll();
+  res.status(200).json(produtos);
 });
 
 router.delete('/:id', async (req, res) => {
   let { id } = req.params;
-  await ProdutoSchema.destroy({where: {id: id}});
-  res.send();
+  await ProdutosModel.destroy({where: {id: id}});
+  res.send(200).send();
 });
 
 router.put('/:id', async (req, res) => {
-  let { nome, preço } = req.body;
   let { id } = req.params;
+  let produto = await ProdutosModel.findOne({where: {id: id}});
 
-  let produto = await ProdutoSchema.findOne({where: {id: id}});
+  let { nome, descricao, preco, estoque } = req.body;
 
-  produto.nome = nome;
-  produto.preço = preço;
+  produto.nome = nome ? nome : produto.nome;
+  produto.descricao = descricao ? descricao : produto.descricao;
+  produto.preco = preco ? preco : produto.preco;
+  produto.estoque = estoque ? estoque : produto.estoque;
 
   produto.save();
 
