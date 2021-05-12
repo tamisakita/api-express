@@ -1,24 +1,28 @@
 const router = require('express').Router();
 const UserModel = require('./model');
+const Validator = require('../validator');
+const ProdutosModel = require('../produtos/model');
 
-const validateUser = (req, res, next) => {
-  let requiredFields = ['nome', 'cpf', 'email'];
-  let { body } = req;
-  for (let field of requiredFields) {
-    if (!body[field]) {
-      res.status(400).send(`O campo ${field} é obrigatório`)
-      return;
-    }
-  }
-  next();
+let requiredFields = { 
+  nome: {
+    required: true,
+  },
+  cpf: {
+    required: true,
+  },
+  email: {
+    required: true,
+  },
 }
 
+const usuarioValidator = new Validator(requiredFields);
+
 router.get('/', async (req, res) => {
-  const usuarios = await UserModel.findAll();
+  const usuarios = await UserModel.findAll({ include: ProdutosModel});
   res.status(200).json(usuarios);
 });
 
-router.post('/', validateUser, async (req, res) => {
+router.post('/', usuarioValidator.getValidator(), async (req, res) => {
   await UserModel.create(req.body);
   res.status(201).send();
 });
