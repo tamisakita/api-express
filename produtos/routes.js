@@ -22,7 +22,7 @@ router.post('/', produtoValidator.getValidator(), async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  const produtos = await ProdutosModel.findAll();
+  const produtos = await ProdutosModel.findAll({ include: 'usuarios' });
   res.status(200).json(produtos);
 });
 

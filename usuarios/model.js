@@ -23,6 +23,7 @@ const UserModel = db.define('usuarios', {
     type: Sequelize.STRING(100),
     allowNull: false,
   },
+
 });
 
 module.exports = UserModel;
